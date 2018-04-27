@@ -279,7 +279,9 @@ function Renderer(container) {
         }
         if (imageType == 'cubemap')
             fillMissingFaces(cubeImgWidth);
-        if (image.basePath) {
+        if (typeof image.path === "function") {
+            image.fullpath = image.path;
+        } else if (image.basePath) {
             image.fullpath = image.basePath + image.path;
         } else {
             image.fullpath = image.path;
@@ -782,7 +784,7 @@ function Renderer(container) {
      * @param {number} level - Node's zoom level.
      * @param {number} x - Node's x position.
      * @param {number} y - Node's y position.
-     * @param {string} path - Node's path.
+     * @param {string|Function} path - Node's path.
      */
     function MultiresNode(vertices, side, level, x, y, path) {
         this.vertices = vertices;
@@ -790,7 +792,11 @@ function Renderer(container) {
         this.level = level;
         this.x = x;
         this.y = y;
-        this.path = path.replace('%s',side).replace('%l',level).replace('%x',x).replace('%y',y);
+        if (typeof path === "function") {
+	        this.path = path(side, level, x, y);
+        } else {
+	        this.path = path.replace('%s', side).replace('%l', level).replace('%x', x).replace('%y', y);
+        }
     }
 
     /**

@@ -313,7 +313,23 @@ function init() {
         infoDisplay.load.lbox.style.display = 'block';
         infoDisplay.load.lbar.style.display = 'none';
     } else if (config.type == 'multires') {
-        var c = JSON.parse(JSON.stringify(config.multiRes));    // Deep copy
+        var c;
+        if (config.multiRes && typeof config.multiRes.path === "function") {
+            var
+                pathFunction = config.multiRes.path;
+            
+            // Temporarily remove that function so the config is JSON-serialisable
+            config.multiRes.path = null;
+    
+            c = JSON.parse(JSON.stringify(config.multiRes));    // Deep copy
+            
+            // Put it back in the caller's copy:
+            config.multiRes.path = pathFunction;
+            // And our copy:
+            c.path = pathFunction;
+        } else {
+            c = JSON.parse(JSON.stringify(config.multiRes));    // Deep copy
+        }
         // Avoid "undefined" in path, check (optional) multiRes.basePath, too
         // Use only multiRes.basePath if it's an absolute URL
         if (config.basePath && config.multiRes.basePath &&
