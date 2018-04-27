@@ -127,6 +127,7 @@ levels = int(math.ceil(math.log(float(cubeSize) / tileSize, 2))) + 1
 origHeight = str(origHeight)
 origWidth = str(origWidth)
 origFilename = os.path.join(os.getcwd(), args.inputFile)
+origFilenameNoExt = os.path.splitext(os.path.basename(origFilename))[0]
 extension = '.jpg'
 if args.png:
     extension = '.png'
@@ -173,8 +174,6 @@ for f in range(0, 6):
     if faceExists:
         face = Image.open(os.path.join(args.output, faces[f]))
         for level in range(levels, 0, -1):
-            if not os.path.exists(os.path.join(args.output, str(level))):
-                os.makedirs(os.path.join(args.output, str(level)))
             tiles = int(math.ceil(float(size) / tileSize))
             if (level < levels):
                 face = face.resize([size, size], Image.ANTIALIAS)
@@ -195,14 +194,12 @@ for f in range(0, 6):
                             background = Image.new(tile.mode[:-1], tile.size, colorTuple)
                             background.paste(tile, tile.split()[-1])
                             tile = background
-                        tile.save(os.path.join(args.output, str(level), faceLetters[f] + str(i) + '_' + str(j) + extension), quality=args.quality)
+                        tile.save(os.path.join(args.output, origFilenameNoExt + '_' + faceLetters[f] + '_' + str(level) + '_' + str(i) + '_' + str(j) + extension), quality=args.quality)
             size = int(size / 2)
 
 # Generate fallback tiles
 print('Generating fallback tiles...')
 for f in range(0, 6):
-    if not os.path.exists(os.path.join(args.output, 'fallback')):
-        os.makedirs(os.path.join(args.output, 'fallback'))
     if os.path.exists(os.path.join(args.output, faces[f])):
         face = Image.open(os.path.join(args.output, faces[f]))
         if face.mode in ('RGBA', 'LA'):
@@ -210,7 +207,7 @@ for f in range(0, 6):
             background.paste(face, face.split()[-1])
             face = background
         face = face.resize([args.fallbackSize, args.fallbackSize], Image.ANTIALIAS)
-        face.save(os.path.join(args.output, 'fallback', faceLetters[f] + extension), quality = args.quality)
+        face.save(os.path.join(args.output, origFilenameNoExt + '_fallback_' + faceLetters[f] + extension), quality = args.quality)
 
 # Clean up temporary files
 if not args.debug:
@@ -237,8 +234,8 @@ text.append('    "avoidShowingBackground": ' + ("true" if args.avoidbackground e
 text.append('    "autoLoad": ' + ("true" if args.autoload else "false") + ',')
 text.append('    "type": "multires",')
 text.append('    "multiRes": {')
-text.append('        "path": "/%l/%s%y_%x",')
-text.append('        "fallbackPath": "/fallback/%s",')
+text.append('        "path": "/%s_%l_%y_%x",')
+text.append('        "fallbackPath": "/fallback_%s",')
 text.append('        "extension": "' + extension[1:] + '",')
 text.append('        "tileResolution": ' + str(tileSize) + ',')
 text.append('        "maxLevel": ' + str(levels) + ',')
